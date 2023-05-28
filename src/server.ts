@@ -34,17 +34,21 @@ const onFinished = require('on-finished');
   app.get("/filteredimage", async (req, res) => {
     const { image_url } = req.query;
     if (image_url && typeof image_url === 'string') {
-      const path = await filterImageFromURL(image_url);
-      res.status(200).sendFile(path, (err) => {
-        if (err) {
-          console.log(err);
-        } else {
-          onFinished(res, () => {
-            deleteLocalFiles([path]);
-          })
+      try {
+        const path = await filterImageFromURL(image_url);
+        res.status(200).sendFile(path, (err) => {
+          if (err) {
+            console.log(err);
+          } else {
+            onFinished(res, () => {
+              deleteLocalFiles([path]);
+            })
+          }
         }
+        );
+      } catch (err) {
+        res.status(500).send(`error while reading image: ${image_url}`);
       }
-      );
 
     } else {
       res.status(400).send("need to add image_url query")
